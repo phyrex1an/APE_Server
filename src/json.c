@@ -758,7 +758,9 @@ static int json_callback(void *ctx, int type, const JSON_value* value)
 				case JSON_T_STRING:
 					cx->current_cx->jval.vu.str.value = xmalloc(sizeof(char) * (value->vu.str.length+1));
 					memcpy(cx->current_cx->jval.vu.str.value, value->vu.str.value, value->vu.str.length+1);
-					cx->current_cx->jval.vu.str.length = value->vu.str.length;			
+					urldecode(cx->current_cx->jval.vu.str.value);
+					cx->current_cx->jval.vu.str.length = strlen(cx->current_cx->jval.vu.str.value);	// TODO: Edit urldecode to return the new lenght instead		
+					//cx->current_cx->jval.vu.str.length = value->vu.str.length;
 					break;
 			}
 			cx->current_cx->type = type;
