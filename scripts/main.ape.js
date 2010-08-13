@@ -8,6 +8,7 @@ Ape.addEvent("init", function() {
 	include("examples/nickname.js");
 	include("examples/move.js");
 	include("utils/checkTool.js"); //Just needed for the APE JSF diagnostic tool, once APE is installed you can remove it 
+	include("irc/ape.irc.chat.js");
 	//include("examples/ircserver.js");
 	//include("framework/http_auth.js");
 });
