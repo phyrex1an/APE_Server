@@ -28,10 +28,48 @@
 #include "pipe.h"
 #include "transports.h"
 
+char *javascript_string_escape(char *unescaped, size_t len) 
+{
+	size_t new_len = 0;
+	size_t index;
+	for(index=0;index<len;index++)
+	{
+		switch (unescaped[index])
+		{
+			case '\'':
+			case '\\':
+				new_len++;
+				break;
+			default:
+				break;
+		}
+	}
+	new_len=new_len+len;
+        char *escaped = xmalloc(new_len+1);
+	escaped[new_len] = '\0';
+	size_t new_index, old_index;
+	for(new_index=0,old_index=0;old_index<len;old_index++,new_index++)
+        {
+                switch (unescaped[old_index])
+                {
+                        case '\'':
+                        case '\\':
+                                escaped[new_index++]='\\';
+				break;
+                        default:
+                                break;
+                }
+		escaped[new_index] = unescaped[old_index];
+        }
+	return escaped;
+}
+
 RAW *forge_raw(const char *raw, json_item *jlist)
 {
 	RAW *new_raw;
 	char unixtime[16];
+	char *unescaped;
+
 	struct jsontring *string;
 	
 	json_item *jstruct = NULL;
@@ -47,13 +85,14 @@ RAW *forge_raw(const char *raw, json_item *jlist)
 	string = json_to_string(jstruct, NULL, 1);
 
 	new_raw = xmalloc(sizeof(*new_raw));
-    	new_raw->len = string->len;
+    	//new_raw->len = string->len;
 	new_raw->next = NULL;
 	new_raw->priority = RAW_PRI_LO;
 	new_raw->refcount = 0;
-
-	new_raw->data = string->jstring;
-
+	unescaped = string->jstring;
+	new_raw->data = javascript_string_escape(unescaped, string->len); 
+	new_raw->len = strlen(new_raw->data);
+	free(unescaped);
 	free(string);
 
 	return new_raw;
@@ -263,7 +302,6 @@ int post_to_pipe(json_item *jlist, const char *rawname, const char *pipe, subuse
 		
 	return 1;
 }
-
 
 int send_raw_inline(ape_socket *client, transport_t transport, RAW *raw, acetables *g_ape)
 {
